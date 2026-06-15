@@ -5,6 +5,9 @@ on:
     - cron: "0 23 * * *"
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   push-weather:
     runs-on: ubuntu-latest
@@ -19,11 +22,26 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      - name: Generate weather voice
+        env:
+          QWEATHER_KEY: ${{ secrets.QWEATHER_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          QWEATHER_API_HOST: ${{ vars.QWEATHER_API_HOST || 'pp5u9xmvay.re.qweatherapi.com' }}
+          LOCATION: ${{ vars.LOCATION || '117.00,39.14' }}
+          CITY_NAME: ${{ vars.CITY_NAME || '天津市西青区杨柳青镇' }}
+          PUSH_MODE: voice
+          REPO_AUDIO_URL: https://raw.githubusercontent.com/CodeJohnw/weather-push/main/output/weather.mp3
+        run: python weather.py --prepare-only
+
+      - name: Publish weather voice file
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add output/weather.mp3 output/push.json
+          git diff --cached --quiet || git commit -m "Update weather voice"
+          git push
+
       - name: Run weather push
         env:
           SENDKEY: ${{ secrets.SENDKEY }}
-          QWEATHER_KEY: ${{ secrets.QWEATHER_KEY }}
-          QWEATHER_API_HOST: ${{ vars.QWEATHER_API_HOST || 'pp5u9xmvay.re.qweatherapi.com' }}
-          LOCATION: ${{ vars.LOCATION || '101220101' }}
-          CITY_NAME: ${{ vars.CITY_NAME || '合肥' }}
-        run: python weather.py
+        run: python weather.py --send-prepared output/push.json

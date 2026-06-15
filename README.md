@@ -1,14 +1,16 @@
 # Daily Weather Push
 
 每天通过 GitHub Actions 拉取和风天气，并用 Server酱 Turbo 推送到微信。
+默认会生成一段 mp3 语音天气，并在微信推送里给出播放链接。
 
 ## 需要准备
 
 1. Server酱 Turbo 的 SendKey。
 2. 和风天气的 API Key。
-3. 一个 GitHub 仓库。
+3. OpenAI API Key，用来生成语音。
+4. 一个 GitHub 仓库。
 
-注意：SendKey 属于密钥，不要写进代码。你已经在聊天里贴过一次，建议去 Server酱里更换一个新的 SendKey。
+注意：SendKey 和 OpenAI API Key 都属于密钥，不要写进代码。如果曾经在聊天或网页里明文贴过，建议去对应平台重置。
 
 ## GitHub Secrets
 
@@ -21,15 +23,16 @@
 ```text
 SENDKEY=你的Server酱SendKey
 QWEATHER_KEY=你的和风天气Key
+OPENAI_API_KEY=你的OpenAI API Key
 ```
 
 ## 城市配置
 
-默认城市是合肥：
+默认地点是天津市西青区杨柳青镇附近：
 
 ```text
-LOCATION=101220101
-CITY_NAME=合肥
+LOCATION=117.00,39.14
+CITY_NAME=天津市西青区杨柳青镇
 ```
 
 默认和风天气 API Host 是：
@@ -68,6 +71,7 @@ python weather.py --dry-run
 
 ```bash
 export QWEATHER_KEY=你的和风天气Key
+export OPENAI_API_KEY=你的OpenAI API Key
 export SENDKEY=你的Server酱SendKey
 python weather.py
 ```
