@@ -6,7 +6,7 @@ from typing import Any
 import requests
 
 
-DEFAULT_QWEATHER_API_HOST = "devapi.qweather.com"
+DEFAULT_QWEATHER_API_HOST = "pp5u9xmvay.re.qweatherapi.com"
 SERVER_CHAN_URL = "https://sctapi.ftqq.com/{sendkey}.send"
 
 

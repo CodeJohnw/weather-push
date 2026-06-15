@@ -35,7 +35,7 @@ CITY_NAME=合肥
 默认和风天气 API Host 是：
 
 ```text
-QWEATHER_API_HOST=devapi.qweather.com
+QWEATHER_API_HOST=pp5u9xmvay.re.qweatherapi.com
 ```
 
 如果要换城市，可以在 GitHub 仓库的：
