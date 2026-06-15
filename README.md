@@ -32,6 +32,12 @@ LOCATION=101220101
 CITY_NAME=合肥
 ```
 
+默认和风天气 API Host 是：
+
+```text
+QWEATHER_API_HOST=devapi.qweather.com
+```
+
 如果要换城市，可以在 GitHub 仓库的：
 
 `Settings -> Secrets and variables -> Actions -> Variables`
@@ -41,6 +47,12 @@ CITY_NAME=合肥
 ```text
 LOCATION=城市ID
 CITY_NAME=城市名
+```
+
+如果和风天气控制台里你的项目显示了不同的 API Host，也在这里添加：
+
+```text
+QWEATHER_API_HOST=你的API Host
 ```
 
 ## 本地测试

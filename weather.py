@@ -6,7 +6,7 @@ from typing import Any
 import requests
 
 
-QWEATHER_URL = "https://devapi.qweather.com/v7/weather/3d"
+DEFAULT_QWEATHER_API_HOST = "devapi.qweather.com"
 SERVER_CHAN_URL = "https://sctapi.ftqq.com/{sendkey}.send"
 
 
@@ -20,19 +20,26 @@ def require_env(name: str) -> str:
     return value
 
 
-def fetch_weather(api_key: str, location: str) -> dict[str, Any]:
+def fetch_weather(api_key: str, location: str, api_host: str) -> dict[str, Any]:
+    weather_url = f"https://{api_host}/v7/weather/3d"
     response = requests.get(
-        QWEATHER_URL,
+        weather_url,
         params={"location": location, "key": api_key},
         timeout=15,
     )
-    response.raise_for_status()
+
+    if not response.ok:
+        raise RuntimeError(
+            "QWeather HTTP request failed. "
+            f"status={response.status_code}, url={response.url}, body={response.text}"
+        )
+
     data = response.json()
 
     if data.get("code") != "200":
         raise RuntimeError(
             "QWeather API failed. "
-            f"code={data.get('code')}, location={location}, response={data}"
+            f"code={data.get('code')}, location={location}, host={api_host}, response={data}"
         )
 
     daily = data.get("daily")
@@ -91,9 +98,10 @@ def main() -> int:
 
     location = os.getenv("LOCATION", "101220101")
     city_name = os.getenv("CITY_NAME", "合肥")
+    qweather_api_host = os.getenv("QWEATHER_API_HOST", DEFAULT_QWEATHER_API_HOST)
     qweather_key = require_env("QWEATHER_KEY")
 
-    today = fetch_weather(qweather_key, location)
+    today = fetch_weather(qweather_key, location, qweather_api_host)
     title, desp = build_message(today, city_name)
 
     if args.dry_run:
