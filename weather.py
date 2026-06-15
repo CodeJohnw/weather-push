@@ -13,7 +13,10 @@ SERVER_CHAN_URL = "https://sctapi.ftqq.com/{sendkey}.send"
 def require_env(name: str) -> str:
     value = os.getenv(name)
     if not value:
-        raise RuntimeError(f"Missing environment variable: {name}")
+        raise RuntimeError(
+            f"Missing environment variable: {name}. "
+            f"Please add it in GitHub Settings -> Secrets and variables -> Actions."
+        )
     return value
 
 
@@ -27,7 +30,10 @@ def fetch_weather(api_key: str, location: str) -> dict[str, Any]:
     data = response.json()
 
     if data.get("code") != "200":
-        raise RuntimeError(f"QWeather API returned code {data.get('code')}: {data}")
+        raise RuntimeError(
+            "QWeather API failed. "
+            f"code={data.get('code')}, location={location}, response={data}"
+        )
 
     daily = data.get("daily")
     if not daily:
@@ -41,10 +47,15 @@ def build_message(today: dict[str, Any], city_name: str) -> tuple[str, str]:
     temp_min = today.get("tempMin", "?")
     temp_max = today.get("tempMax", "?")
     wind = today.get("windDirDay", "风向未知")
-    precip = today.get("precip", "0.0")
+    precip = today.get("precip", "0.0") or "0.0"
     humidity = today.get("humidity", "?")
 
-    umbrella_tip = "有降水可能，出门记得带伞。" if float(precip) > 0 else "看起来不太会下雨，出门也可以轻装一点。"
+    try:
+        precip_value = float(precip)
+    except ValueError:
+        precip_value = 0.0
+
+    umbrella_tip = "有降水可能，出门记得带伞。" if precip_value > 0 else "看起来不太会下雨，出门也可以轻装一点。"
 
     title = f"{city_name}早安天气"
     desp = f"""妈，早上好。
@@ -65,7 +76,12 @@ def send_to_wechat(sendkey: str, title: str, desp: str) -> dict[str, Any]:
         timeout=15,
     )
     response.raise_for_status()
-    return response.json()
+    data = response.json()
+
+    if data.get("code") not in (0, "0"):
+        raise RuntimeError(f"ServerChan API failed. response={data}")
+
+    return data
 
 
 def main() -> int:
@@ -88,7 +104,7 @@ def main() -> int:
 
     sendkey = require_env("SENDKEY")
     result = send_to_wechat(sendkey, title, desp)
-    print(result)
+    print(f"Push succeeded: {result}")
     return 0
 
 
